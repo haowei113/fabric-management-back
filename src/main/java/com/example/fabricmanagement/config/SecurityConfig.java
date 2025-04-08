@@ -38,6 +38,7 @@ public class SecurityConfig {
 
                         // 允许所有认证用户访问 /api/user 接口
                         .requestMatchers(HttpMethod.GET, "/api/user").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/user").authenticated()
                           // 收藏相关接口对所有已认证用户开放
                          .requestMatchers(HttpMethod.POST, "/api/fabrics/*/favorite").authenticated()
                          .requestMatchers(HttpMethod.DELETE, "/api/fabrics/*/favorite").authenticated()

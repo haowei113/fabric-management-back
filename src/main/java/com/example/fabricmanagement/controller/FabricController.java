@@ -2,8 +2,13 @@ package com.example.fabricmanagement.controller;
 
 import com.example.fabricmanagement.dto.FabricDTO;
 import com.example.fabricmanagement.dto.FabricResponseDTO;
+import com.example.fabricmanagement.model.Fabric;
+import com.example.fabricmanagement.model.Material;
+import com.example.fabricmanagement.model.Supplier;
+import com.example.fabricmanagement.repository.FavoriteRepository;
 import com.example.fabricmanagement.service.FabricService;
 import com.example.fabricmanagement.repository.UserRepository;
+import com.example.fabricmanagement.repository.FabricRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +33,8 @@ import java.util.UUID;
 public class FabricController {
     private final FabricService fabricService;
     private final UserRepository userRepository;
-
+    private final FabricRepository fabricRepository;
+    private final FavoriteRepository favoriteRepository;
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FabricResponseDTO> addFabric(
             @RequestPart("data") String fabricData, // 接收 JSON 数据为字符串
@@ -96,6 +102,8 @@ public class FabricController {
         String username = (String) auth.getPrincipal();
         System.out.println("Authenticated user: " + username);
         // 调用服务层删除逻辑
+        // 删除与该织物相关的所有收藏记录
+        favoriteRepository.deleteByFabricId(fabricId);
         fabricService.deleteFabric(fabricId, username);
         return ResponseEntity.ok("织物已成功删除");
     }
@@ -177,5 +185,37 @@ public class FabricController {
 //        Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 //        return "/uploads/" + fileName; // 返回图片的相对路径
 //    }
+
+    @GetMapping("/{fabricid}")
+    public ResponseEntity<FabricResponseDTO> getFabricById(@PathVariable int fabricid) {
+        // 根据 ID 查询面料信息
+        Fabric fabric = fabricRepository.findById(fabricid)
+                .orElseThrow(() -> new RuntimeException("面料不存在"));
+        // 转换为 DTO
+        FabricResponseDTO fabricResponseDTO = new FabricResponseDTO();
+        fabricResponseDTO.setFabricId(fabric.getFabricId());
+        fabricResponseDTO.setName(fabric.getName());
+        fabricResponseDTO.setDescription(fabric.getDescription());
+        fabricResponseDTO.setImagePath(fabric.getImagePath());
+
+        // 设置材质名称
+        if (fabric.getMaterial() != null) {
+            fabricResponseDTO.setMaterialName(fabric.getMaterial().getMaterialName());
+        }
+
+        // 设置供应商名称
+        if (fabric.getSupplier() != null) {
+            fabricResponseDTO.setSupplierName(fabric.getSupplier().getSupplierName());
+        }
+
+        // 设置颜色名称列表
+        if (fabric.getColors() != null) {
+            fabricResponseDTO.setColorNames(fabric.getColors().stream()
+                    .map(color -> color.getColorName())
+                    .toList());
+        }
+
+        return ResponseEntity.ok(fabricResponseDTO);
+    }
 }
 

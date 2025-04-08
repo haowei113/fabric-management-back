@@ -9,6 +9,7 @@ public class FabricResponseDTO {
     private String name;
     private String materialName;
     private String supplierName;
+    private Integer supplierId;
     private String description;
     private String imagePath;
     private List<String> colorNames;

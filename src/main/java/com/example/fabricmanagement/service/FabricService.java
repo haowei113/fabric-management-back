@@ -106,6 +106,7 @@ public class FabricService {
         dto.setName(fabric.getName());
         dto.setMaterialName(fabric.getMaterial().getMaterialName());
         dto.setSupplierName(fabric.getSupplier().getSupplierName());
+        dto.setSupplierId(fabric.getSupplier().getSupplierId());
         dto.setDescription(fabric.getDescription());
         dto.setImagePath(fabric.getImagePath());
 
